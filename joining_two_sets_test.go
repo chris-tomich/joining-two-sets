@@ -13,6 +13,10 @@ func MakeWord(maxSize int) string {
 
 	wordSize := r.Intn(maxSize);
 
+	if wordSize < 3 {
+		wordSize = 3
+	}
+
 	isAlpha := r.Intn(10) >= 3
 
 	var word string
