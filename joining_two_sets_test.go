@@ -52,7 +52,7 @@ func GetTwoDiffSizedSets(size int) ([]string, []string) {
 	return bagOfWords, wordSubSet
 }
 
-func GetTwoMatchingSizeSets(size int) ([]string, []string) {
+func GetTwoMatchingSizedSets(size int) ([]string, []string) {
 	bagOfWords := make([]string, 0, size)
 
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -76,8 +76,8 @@ func GetTwoMatchingSizeSets(size int) ([]string, []string) {
 	return bagOfWords, wordSubSet
 }
 
-func BenchmarkJoinTwoSets(b *testing.B) {
-	largeSet, smallSet := GetTwoMatchingSizeSets(1000)
+func BenchmarkJoinTwoMatchingSizedSets(b *testing.B) {
+	largeSet, smallSet := GetTwoMatchingSizedSets(100000)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -90,6 +90,27 @@ func BenchmarkJoinTwoSets(b *testing.B) {
 		newSet := make([]string, 0, len(smallSet))
 
 		for _, word := range smallSet {
+			if _, ok := largeSetMap[word]; ok {
+				newSet = append(newSet, word)
+			}
+		}
+	}
+}
+
+func BenchmarkJoinTwoDiffSizedSets(b *testing.B) {
+	largeSet, smallSet := GetTwoDiffSizedSets(10000)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		largeSetMap := make(map[string]int)
+
+		for i, word := range smallSet {
+			largeSetMap[word] = i
+		}
+
+		newSet := make([]string, 0, len(largeSet))
+
+		for _, word := range largeSet {
 			if _, ok := largeSetMap[word]; ok {
 				newSet = append(newSet, word)
 			}
