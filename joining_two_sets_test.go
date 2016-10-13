@@ -5,7 +5,6 @@ import (
 	"math/rand"
 	"time"
 	"strconv"
-	"fmt"
 )
 
 func MakeWord(maxSize int) string {
@@ -29,7 +28,7 @@ func MakeWord(maxSize int) string {
 	return word
 }
 
-func GetTwoSets(size int) ([]string, []string) {
+func GetTwoDiffSizedSets(size int) ([]string, []string) {
 	bagOfWords := make([]string, 0, size)
 
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -53,24 +52,47 @@ func GetTwoSets(size int) ([]string, []string) {
 	return bagOfWords, wordSubSet
 }
 
-func BenchmarkJoinTwoSets(b *testing.B) {
-	largeSet, smallSet := GetTwoSets(1000000)
+func GetTwoMatchingSizeSets(size int) ([]string, []string) {
+	bagOfWords := make([]string, 0, size)
 
-	b.ResetTimer()
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
-	largeSetMap := make(map[string]int)
-
-	for i, word := range largeSet {
-		largeSetMap[word] = i
+	for i := 0; i < size; i++ {
+		bagOfWords = append(bagOfWords, MakeWord(10))
 	}
 
-	newSet := make([]string, 0, len(smallSet))
+	wordSubSetLen := len(bagOfWords)
 
-	for _, word := range smallSet {
-		if _, ok := largeSetMap[word]; ok {
-			newSet = append(newSet, word)
+	wordSubSet := make([]string, wordSubSetLen)
+
+	for i := 0; i < wordSubSetLen; i++ {
+		if (i % 5) == 0 {
+			wordSubSet[i] = bagOfWords[r.Intn(len(bagOfWords))]
+		} else {
+			wordSubSet[i] = MakeWord(10)
 		}
 	}
 
-	fmt.Println(len(largeSet), len(smallSet), len(newSet))
+	return bagOfWords, wordSubSet
+}
+
+func BenchmarkJoinTwoSets(b *testing.B) {
+	largeSet, smallSet := GetTwoMatchingSizeSets(1000)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		largeSetMap := make(map[string]int)
+
+		for i, word := range largeSet {
+			largeSetMap[word] = i
+		}
+
+		newSet := make([]string, 0, len(smallSet))
+
+		for _, word := range smallSet {
+			if _, ok := largeSetMap[word]; ok {
+				newSet = append(newSet, word)
+			}
+		}
+	}
 }
